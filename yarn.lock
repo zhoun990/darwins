@@ -283,6 +283,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@e-state/core@npm:latest":
+  version: 0.2.22
+  resolution: "@e-state/core@npm:0.2.22"
+  checksum: f84a3ca2eae0e2cb4cb3ea49c933a809807ee955ef7505f7a2f77d5feb9cdc5a7142e3cb193dbc2f8a35f647874e7db9228de8fd09cae2be58ce9e03f2925977
+  languageName: node
+  linkType: hard
+
+"@e-state/react@npm:^0.1.16":
+  version: 0.1.16
+  resolution: "@e-state/react@npm:0.1.16"
+  dependencies:
+    "@e-state/core": "npm:latest"
+    react: "npm:^18.2.0"
+  checksum: 7216c8e461333de736c00137cf236f5a8aab8af1d7b4916d3cdb5545cf9ceb73da7f1189bb2f54c41d5334e0e3326401e72ae843b67af4da3f867594eb69bc74
+  languageName: node
+  linkType: hard
+
 "@esbuild/android-arm64@npm:0.19.9":
   version: 0.19.9
   resolution: "@esbuild/android-arm64@npm:0.19.9"
@@ -476,6 +493,18 @@ __metadata:
   version: 8.56.0
   resolution: "@eslint/js@npm:8.56.0"
   checksum: 60b3a1cf240e2479cec9742424224465dc50e46d781da1b7f5ef240501b2d1202c225bd456207faac4b34a64f4765833345bc4ddffd00395e1db40fa8c426f5a
+  languageName: node
+  linkType: hard
+
+"@headlessui/react@npm:^1.7.17":
+  version: 1.7.17
+  resolution: "@headlessui/react@npm:1.7.17"
+  dependencies:
+    client-only: "npm:^0.0.1"
+  peerDependencies:
+    react: ^16 || ^17 || ^18
+    react-dom: ^16 || ^17 || ^18
+  checksum: a17d819e8c7aca764479eba1bd1bfe28d9f99ce4c16a296986f902ee040e57e242bd21d525570118c318cf1f013c9b56c6568980686774ca1881e82ca5cdeebe
   languageName: node
   linkType: hard
 
@@ -1251,6 +1280,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"client-only@npm:^0.0.1":
+  version: 0.0.1
+  resolution: "client-only@npm:0.0.1"
+  checksum: 9d6cfd0c19e1c96a434605added99dff48482152af791ec4172fb912a71cff9027ff174efd8cdb2160cc7f377543e0537ffc462d4f279bc4701de3f2a3c4b358
+  languageName: node
+  linkType: hard
+
 "color-convert@npm:^1.9.0":
   version: 1.9.3
   resolution: "color-convert@npm:1.9.3"
@@ -1335,6 +1371,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "darwins@workspace:."
   dependencies:
+    "@e-state/react": "npm:^0.1.16"
+    "@headlessui/react": "npm:^1.7.17"
     "@types/node": "npm:^20.10.5"
     "@types/react": "npm:^18.2.43"
     "@types/react-dom": "npm:^18.2.17"

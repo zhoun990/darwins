@@ -1,184 +1,166 @@
 import { N } from "./NumericUtils";
 import { DarwinManager } from "./DarwinManager";
-
+import { getObjectKeys } from "./utils";
+const direction = (from: number, to: number) => {
+  const t = to % 3 === 0 && (from === 1 || from === 2);
+  const b = from % 3 === 0 && (to === 1 || to === 2);
+  const l = to >= 2 && from <= 1;
+  const r = from >= 2 && to <= 1;
+  return { t, b, l, r };
+};
 export class Darwin {
-  id: string;
-  x = DarwinManager.width / 2;
-  y = DarwinManager.height / 2;
-  w = 10;
-  h = 10;
-  tall = 10;
-  weight = 1;
-  speed = 1;
-  default_hp = 100;
-  hp = 100;
-  delta = 100; //ms
-  frame = 0;
+  id = N.generateRandomID(20);
+
+  x = N.random(0, DarwinManager.width);
+  y = N.random(0, DarwinManager.height);
+  w = N.random(7, 13);
+  h = N.random(7, 13);
+  sight = N.random(7, 13);
+  tall = N.random(7, 13);
+  weight = N.random(1, 40) / 10;
+  speed = N.random(1, 20) / 10;
+  default_hp = N.random(80, 120);
+  hp = this.default_hp;
+  lifetime = N.random(80, 120); //frame
+
   sex = N.random(0, 1); //0=male,1=female,2=no-sex
-  color = "white";
-  lifetime = 100; //frame
   spawnbility = this.sex; //count of children able to spawn at the same time
-  default_spawn_cooltime = 10;
-  initial_spawn_cooltime = 30;
-  rest_spawn_cooltime = this.sex ? 20 : 0;
-  default_spawnable_times = 3;
-  rest_spawnable_times = this.sex ? 3 : 0;
+  color = this.sex ? "red" : "white";
+  default_spawn_cooltime = N.random(7, 13);
+  initial_spawn_cooltime = N.random(20, 40);
+  rest_spawn_cooltime = this.sex ? this.initial_spawn_cooltime : 0;
+  default_spawnable_times = N.random(1, 5);
+  rest_spawnable_times = this.sex ? this.default_spawnable_times : 0;
   child_count = 0;
-  target_area = -1;
+  penalty = 0;
+  dsdt = 500; //different_species_determination_threshold
+  body_temperature = N.random(10, 40);
+  optimal_temperature = N.random(this.body_temperature - 20, this.body_temperature + 10);
+
+  delta = N.random(80, 120); //ms
+  frame = 0;
+  last_tick_timestamp = 0;
+
+  movement_path = [];
   constructor(initial?: {
-    id?: string;
-    x?: number;
-    y?: number;
-    w?: number;
-    h?: number;
-    tall?: number;
-    weight?: number;
-    speed?: number;
-    default_hp?: number;
-    delta?: number;
-    lifetime?: number;
-    sex?: number;
-    spawnbility?: number;
-    default_spawn_cooltime?: number;
-    initial_spawn_cooltime?: number;
-    default_spawnable_times?: number;
+    [key in keyof Darwin]?: Darwin[key];
   }) {
     this.id = initial?.id || N.generateRandomID(20);
-    this.x =
-      initial?.x ||
-      N.random(this.x - DarwinManager.width / 4, this.x + DarwinManager.width / 4);
-    this.y =
-      initial?.y ||
-      N.random(this.y - DarwinManager.height / 4, this.y + DarwinManager.height / 4);
-    this.formatPos(DarwinManager.width, DarwinManager.height);
-    this.w = Math.max(1, initial?.w || N.random(this.w - 3, this.w + 3));
-    this.h = Math.max(1, initial?.h || N.random(this.h - 3, this.h + 3));
-    this.tall = Math.max(1, initial?.tall || N.random(this.tall - 3, this.tall + 3));
-    this.weight = Math.max(
-      1,
-      initial?.weight || N.random(this.weight - 3, this.weight + 3)
-    );
-    this.speed = Math.max(1, initial?.speed || N.random(this.speed - 1, this.speed + 1));
-    this.default_hp = Math.max(
-      1,
-      initial?.default_hp || N.random(this.default_hp - 5, this.default_hp + 5)
-    );
-    this.hp = this.default_hp;
-    this.delta = Math.max(1, initial?.delta || N.random(this.delta - 5, this.delta + 5));
-    this.lifetime = Math.max(
-      1,
-      initial?.lifetime || N.random(this.lifetime - 5, this.lifetime + 5)
-    );
-    this.sex = N.isNumber(initial?.sex) ? initial?.sex : N.random(0, 1);
+    if (initial)
+      getObjectKeys(initial).forEach((key) => {
+        if (
+          Object.prototype.hasOwnProperty.call(this, key) &&
+          Object.prototype.hasOwnProperty.call(initial, key) &&
+          typeof initial[key] !== "function"
+        ) {
+          //@ts-expect-error
+          this[key] = initial[key];
+        }
+      });
 
-    this.color = this.sex ? "red" : "white";
-    this.spawnbility = N.isNumber(initial?.spawnbility) ? initial?.spawnbility : this.sex;
-    this.default_spawn_cooltime = Math.max(
-      0,
-      initial?.default_spawn_cooltime || this.default_spawn_cooltime
-    );
-    this.initial_spawn_cooltime = Math.max(
-      0,
-      initial?.initial_spawn_cooltime || this.initial_spawn_cooltime
-    );
-    this.default_spawnable_times = Math.max(
-      0,
-      initial?.default_spawnable_times || this.default_spawnable_times
-    );
-    this.rest_spawn_cooltime = this.sex && this.default_spawn_cooltime;
-    this.rest_spawnable_times = this.sex && this.default_spawnable_times;
-    // console.log("Born:", this);
-
-    this.tick();
+    this.formatPos();
   }
   tick() {
     if (DarwinManager.pause) return;
+    if (this.last_tick_timestamp + this.delta > Date.now()) return;
+    this.last_tick_timestamp = Date.now();
     this.frame++;
     //death
     if (this.frame >= this.lifetime) this.kill();
     if (this.hp <= 0) return;
     //
-    const penalty = DarwinManager.eat(this);
-    if (penalty > 0) {
-      this.hp -= penalty;
-    } else if (this.hp < this.default_hp) {
-      this.hp = Math.min(this.default_hp, this.hp + this.default_hp / 1000);
-    }
-    this.target_area = DarwinManager.getPopDensity(this.hp <= this.default_hp / 2);
-    const area_dif = this.target_area - this.getCurrentArea();
+    try {
+      DarwinManager.eat(this);
+      if (this.penalty > 0) {
+        this.hp -= this.penalty;
+      } else {
+        this.penalty = 0;
+        if (this.hp < this.default_hp) {
+          this.hp = Math.min(this.default_hp, this.hp + this.default_hp / 1000);
+        }
+      }
+      // if (this.frame % 10 === 0)
+      //   this.target_area = DarwinManager.getPopDensity(this.hp <= this.default_hp / 2);
+      const area_dif = 0; // this.target_area - this.getCurrentArea();
+      // const d = direction(this.getCurrentArea(), this.target_area);
 
-    const direction = (from: number, to: number) => {
-      const t = to % 3 === 0 && (from === 1 || from === 2);
-      const b = from % 3 === 0 && (to === 1 || to === 2);
-      const l = to >= 2 && from <= 1;
-      const r = from >= 2 && to <= 1;
-      return { t, b, l, r };
-    };
-    const d = direction(this.getCurrentArea(), this.target_area);
-    //(0,1,2,3)**2
-    //=(0,1,4,9)
-    if (area_dif) {
-      this.x += N.random(-this.speed * (d.r ? 0 : 2), this.speed * (d.l ? 0 : 2));
-      this.y += N.random(-this.speed * (d.b ? 0 : 2), this.speed * (d.t ? 0 : 2));
-    } else {
-      this.x += N.random(-this.speed, this.speed);
-      this.y += N.random(-this.speed, this.speed);
-    }
+      const s = this.speed * 10;
+      // if (area_dif) {
+      //   this.x += N.random(-s * (d.r ? 0 : 2), s * (d.l ? 0 : 2)) / 10;
+      //   this.y += N.random(-s * (d.b ? 0 : 2), s * (d.t ? 0 : 2)) / 10;
+      // } else {
+      this.x += N.random(-s, s) / 10;
+      this.y += N.random(-s, s) / 10;
+      // }
 
-    this.rest_spawn_cooltime = Math.max(0, this.rest_spawn_cooltime - 1);
-    const met = DarwinManager.getDarwinsFromArea(this).filter((dw) => dw.id !== this.id);
-    if (!this.sex) {
-      const females = met.filter((dw) => dw.sex === 1);
-      const males = met.filter((dw) => dw.sex === 0);
+      this.rest_spawn_cooltime = Math.max(0, this.rest_spawn_cooltime - 1);
+      const met = DarwinManager.getChunkFromPos(this)?.darwins.filter(
+        (dw) => dw.id !== this.id
+      );
+      // const foods = met.filter((dw) => !this.isSameSpecies(dw));
+      if (met && !this.sex) {
+        const females = met.filter((dw) => dw.sex === 1 && this.isSameSpecies(dw));
+        const males = met.filter((dw) => dw.sex === 0 && this.isSameSpecies(dw));
 
-      if (females.length) {
-        const target = females[N.random(0, females.length - 1)];
-        if (!target.rest_spawn_cooltime && target.rest_spawnable_times) {
-          const sum = (dw: Darwin) =>
-            dw.w +
-            dw.h +
-            dw.tall +
-            dw.weight +
-            ((dw.sex ? dw.hp / 3 : dw.hp) - dw.frame) / dw.hp;
+        if (females.length) {
+          const target = females[N.random(0, females.length - 1)];
+          this.isSameSpecies(target);
+          if (target.rest_spawn_cooltime <= 0 && target.rest_spawnable_times >= 1) {
+            const sum = (dw: Darwin) =>
+              dw.w +
+              dw.h +
+              dw.tall +
+              dw.weight +
+              ((dw.sex ? dw.hp / 3 : dw.hp) - dw.frame) / dw.hp;
 
-          const min = sum(target) - sum(this) + (1 - this.hp / 100) + penalty;
-          const result = N.random(min, Math.abs(min) + N.random(0, 5));
-          if (result === 0) {
-            for (let i = 0; i < N.random(1, Math.min(target.spawnbility)); i++) {
-              DarwinManager.born(this, target);
+            const min = sum(target) - sum(this) + (1 - this.hp / 100) + this.penalty;
+            const result = N.random(min, Math.abs(min) + N.random(0, 5));
+            if (result === 0) {
+              for (let i = 0; i < N.random(1, Math.min(target.spawnbility)); i++) {
+                DarwinManager.born(this, target);
+                target.hp = Math.max(
+                  0,
+                  target.hp - target.default_hp * (N.random(0, 10) / 10)
+                );
+              }
+              target.child_count++;
+              this.child_count++;
+              target.rest_spawnable_times--;
+              target.rest_spawn_cooltime = target.default_spawn_cooltime;
             }
-            target.child_count++;
-            this.child_count++;
-            target.rest_spawnable_times--;
-            target.rest_spawn_cooltime = target.default_spawn_cooltime;
+          }
+        }
+        if (males.length && males.length + 1 > females.length) {
+          const target = males[N.random(0, males.length - 1)];
+          const sum = (dw: Darwin) =>
+            dw.w + dw.h + dw.tall + dw.weight + dw.speed + (40 - dw.frame);
+          const a = sum(this);
+          const b = sum(target);
+          const result = N.random(-a, b);
+          const v = Math.abs(a - b);
+          if (result <= 0) {
+            target.hp -= Math.max(0, v);
+            this.hp = Math.max(0, Math.min(this.default_hp, this.hp + v));
+          } else {
+            this.hp -= Math.max(0, v);
+            target.hp = Math.max(0, Math.min(target.default_hp, target.hp + v));
           }
         }
       }
-      // console.log(
-      //   "^_^ Log \n file: Darwin.tsx:138 \n males.length + 1 > females.length:",
-      //   males.length + 1,
-      //   females.length
-      // );
-      if (males.length && males.length + 1 > females.length) {
-        const target = males[N.random(0, males.length - 1)];
-        const sum = (dw: Darwin) =>
-          dw.w + dw.h + dw.tall + dw.weight + dw.speed + (40 - dw.frame);
-        const a = sum(this);
-        const b = sum(target);
-        const result = N.random(Math.min(a, b), Math.max(a, b));
-        if (a - result <= b - result) {
-          target.hp -= Math.max(0, b - result);
-        } else {
-          this.hp -= Math.max(0, a - result);
-        }
-      }
-    }
 
-    //
-    this.formatPos(DarwinManager.width, DarwinManager.height);
-    setTimeout(() => {
-      this.tick();
-    }, this.delta);
+      //
+      this.formatPos();
+    } catch (error) {
+      console.error("^_^ Log \n file: Darwin.tsx:131 \n error:", error);
+    }
+  }
+  getSightArea() {
+    return {
+      x: Math.max(0, this.x - this.sight / 2),
+      w: Math.min(DarwinManager.width, this.w + this.sight / 2),
+      y: Math.max(0, this.y - this.sight / 2),
+      h: Math.min(DarwinManager.height, this.h + this.sight / 2),
+    };
   }
   getCurrentArea() {
     //0:top-right,1:bottom-right,2:botttom-left,4:top-left
@@ -186,9 +168,25 @@ export class Darwin {
     const isBottom = this.y > DarwinManager.height / 2;
     return (isRight ? 0 : 1) + (isBottom ? 1 : 0) + (!isRight && !isBottom ? 2 : 0);
   }
-  formatPos(w: number, h: number) {
-    this.x = Math.min(w, Math.max(0, this.x));
-    this.y = Math.min(h, Math.max(0, this.y));
+  formatPos() {
+    this.x = Math.min(DarwinManager.width - this.w, Math.max(0, this.x));
+    this.y = Math.min(DarwinManager.height - this.h, Math.max(0, this.y));
+  }
+  getSpeciesSpecifier() {
+    let n = 0;
+    n += (this.w + this.h + this.tall) ** 2 * (this.w / this.h);
+    n += this.spawnbility ** 10;
+    n +=
+      ((this.optimal_temperature + this.body_temperature) ** 2 *
+        (this.optimal_temperature / this.body_temperature)) /
+      10;
+    return n;
+  }
+  isSameSpecies(target: Darwin) {
+    // const result = Math.abs(this.getSpeciesSpecifier() - target.getSpeciesSpecifier());
+    // console.log(result <= this.dsdt);
+    // return result <= this.dsdt;
+    return true;
   }
   kill() {
     console.log("killed");
