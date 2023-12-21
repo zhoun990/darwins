@@ -5,11 +5,11 @@ import { useEstate } from "../estate";
 import { ITEM_PER_PAGE } from "../App";
 
 export const DarwinsView = () => {
-  const { page } = useEstate("persist");
+  // const { page } = useEstate("persist");
   const DM = DarwinManager.getInstance(0);
   return (
     <div className="overflow-auto w-full grow">
-      {DM.darwins.map((dw, i) => {
+      {/* {DM.darwins.map((dw, i) => {
         if (
           i < (page + 1) * ITEM_PER_PAGE &&
           i >= (page + 1) * ITEM_PER_PAGE - ITEM_PER_PAGE
@@ -80,7 +80,7 @@ export const DarwinsView = () => {
             </div>
           );
         return null;
-      })}
+      })} */}
     </div>
   );
 };
