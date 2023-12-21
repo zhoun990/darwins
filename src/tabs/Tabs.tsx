@@ -14,15 +14,18 @@ export const Tabs = (
     console.log("^_^ Log \n file: App.tsx:249 \n tab:", tab);
   }, [tab]);
   return (
-    <div style={{ flexDirection: "column", display: "flex", ...style }} {...others}>
+    <div style={{ flexDirection: "column", display: "flex", ...style,}} {...others}>
       <div className="flex">
         {tabs.map((title, i) => (
           <div
             key={i}
             style={{}}
-            className="rounded-[8px] border-[1px] border-solid border-[transparent] text-[1em] font-medium [font-family:inherit] bg-[#1a1a1a] cursor-pointer [transition:border-color_0.25s] hover:border-[#646cff] outline-[4px_auto_-webkit-focus-ring-color] p-2 ml-1 rounded-b-none border-b-0"
+            className={
+              "rounded-[8px] border-[1px] border-solid border-[transparent] text-[1em] font-medium [font-family:inherit] bg-[#1a1a1a] cursor-pointer [transition:border-color_0.25s] hover:border-[#646cff] outline-[4px_auto_-webkit-focus-ring-color] p-2 ml-2 rounded-b-none border-b-0 select-none grow last:mr-3 text-center max-w-[200px]" +
+              (i === tab ? " border-[#646cff]" : "")
+            }
             onClick={() => {
-              setEstate({ tab: (cv) => cv + i });
+              setEstate({ tab: i });
               // setTab(i);
             }}
           >
@@ -30,7 +33,7 @@ export const Tabs = (
           </div>
         ))}
       </div>
-      <div className="bg-[#1a1a1a]">{children[tab]}</div>
+      <div className="bg-[#1a1a1a] grow overflow-auto flex flex-col">{children[tab]}</div>
     </div>
   );
 };

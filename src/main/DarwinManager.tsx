@@ -25,7 +25,6 @@ export class DarwinManager {
     return this.instance?.pause;
   }
   static set pause(bool: boolean) {
-    console.log("^_^ Log \n file: DarwinManager.tsx:28 \n bool:", bool);
     if (this.instance) this.instance.pause = bool;
   }
   pause = true;

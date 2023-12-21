@@ -26,7 +26,7 @@ const RAW_RUNTIME_STATE =
       [null, {\
         "packageLocation": "./",\
         "packageDependencies": [\
-          ["@e-state/react", "npm:0.1.16"],\
+          ["@e-state/react", "npm:0.1.18"],\
           ["@headlessui/react", "virtual:2e02f955902e02a3ea1e8866031134ad5ba57067094a576a3d892da0a82329e78d190fc20397aca3aca9af2df5de82176840964650ebf14d706ed0596ad57366#npm:1.7.17"],\
           ["@types/node", "npm:20.10.5"],\
           ["@types/react", "npm:18.2.45"],\
@@ -395,20 +395,21 @@ const RAW_RUNTIME_STATE =
       }]\
     ]],\
     ["@e-state/core", [\
-      ["npm:0.2.22", {\
-        "packageLocation": "../../../AppData/Local/Yarn/Berry/cache/@e-state-core-npm-0.2.22-eb23179da9-10c0.zip/node_modules/@e-state/core/",\
+      ["npm:0.2.26", {\
+        "packageLocation": "../../../AppData/Local/Yarn/Berry/cache/@e-state-core-npm-0.2.26-42171c7e52-10c0.zip/node_modules/@e-state/core/",\
         "packageDependencies": [\
-          ["@e-state/core", "npm:0.2.22"]\
+          ["@e-state/core", "npm:0.2.26"],\
+          ["rfdc", "npm:1.3.0"]\
         ],\
         "linkType": "HARD"\
       }]\
     ]],\
     ["@e-state/react", [\
-      ["npm:0.1.16", {\
-        "packageLocation": "../../../AppData/Local/Yarn/Berry/cache/@e-state-react-npm-0.1.16-39a586c866-10c0.zip/node_modules/@e-state/react/",\
+      ["npm:0.1.18", {\
+        "packageLocation": "../../../AppData/Local/Yarn/Berry/cache/@e-state-react-npm-0.1.18-16f50b57d2-10c0.zip/node_modules/@e-state/react/",\
         "packageDependencies": [\
-          ["@e-state/react", "npm:0.1.16"],\
-          ["@e-state/core", "npm:0.2.22"],\
+          ["@e-state/react", "npm:0.1.18"],\
+          ["@e-state/core", "npm:0.2.26"],\
           ["react", "npm:18.2.0"]\
         ],\
         "linkType": "HARD"\
@@ -1802,7 +1803,7 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "./",\
         "packageDependencies": [\
           ["darwins", "workspace:."],\
-          ["@e-state/react", "npm:0.1.16"],\
+          ["@e-state/react", "npm:0.1.18"],\
           ["@headlessui/react", "virtual:2e02f955902e02a3ea1e8866031134ad5ba57067094a576a3d892da0a82329e78d190fc20397aca3aca9af2df5de82176840964650ebf14d706ed0596ad57366#npm:1.7.17"],\
           ["@types/node", "npm:20.10.5"],\
           ["@types/react", "npm:18.2.45"],\
@@ -3587,6 +3588,15 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "../../../AppData/Local/Yarn/Berry/cache/reusify-npm-1.0.4-95ac4aec11-10c0.zip/node_modules/reusify/",\
         "packageDependencies": [\
           ["reusify", "npm:1.0.4"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["rfdc", [\
+      ["npm:1.3.0", {\
+        "packageLocation": "../../../AppData/Local/Yarn/Berry/cache/rfdc-npm-1.3.0-272f288ad8-10c0.zip/node_modules/rfdc/",\
+        "packageDependencies": [\
+          ["rfdc", "npm:1.3.0"]\
         ],\
         "linkType": "HARD"\
       }]\

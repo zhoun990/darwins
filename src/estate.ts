@@ -1,13 +1,18 @@
-import { GlobalStore, createEstate } from "@e-state/react";
+import { createEstate } from "@e-state/react";
+import { DarwinManager } from "./main/DarwinManager";
 export const { useEstate, clearEstate, setEstates, store } = createEstate(
   {
-    // main: {},
+    main: {
+      lastDMInstance: undefined as undefined | DarwinManager,
+    },
     persist: {
-      // autoRestart: true,
-      // holdSeed: true,
-      // tab:0,
-      // page:0
-      text:0
+      initialDarwinCount: 500,
+      autoRestart: true,
+      holdSeed: true,
+      tab: 0,
+      page: 0,
+      saves: [] as string[],
+      savedData: {} as Record<string, DarwinManager>,
     },
   },
   {
