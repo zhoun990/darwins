@@ -4,6 +4,7 @@ import { Chunk } from "./Chunk";
 import { getObjectKeys } from "./utils";
 export class DarwinManager {
   private static instance: DarwinManager;
+  static tickerId: NodeJS.Timeout;
   chunks: Chunk[] = [];
   static width = 500;
   static height = 500;
@@ -20,6 +21,7 @@ export class DarwinManager {
   last_tick_timestamp = 0;
   last_ticker_timestamp = 0;
   ticker_rate = 0;
+  started_at = Date.now();
   private static cache: Record<string, any> = {};
   static get pause() {
     return this.instance?.pause;
@@ -36,7 +38,8 @@ export class DarwinManager {
     load?: DarwinManager,
     auto_start?: boolean
   ) {
-    DarwinManager.pause = true;
+    console.log("^_^ ::: file: DarwinManager.tsx:40 ::: load:\n", load);
+    // clearTimeout(DarwinManager.tickerId);
     DarwinManager.instance = this;
     if (load) {
       getObjectKeys(load).forEach((key) => {
@@ -70,24 +73,25 @@ export class DarwinManager {
         this.darwins.push(new Darwin());
       }
     }
+    this.started_at = Date.now();
     if (auto_start) {
       this.pause = false;
       this.ticker();
     }
   }
   ticker() {
-    if (this.pause ) return;
+    if (this.pause) return;
     this.last_ticker_timestamp = Date.now();
     this.tick();
     this.darwins.forEach((dw) => dw.tick());
     this.chunks.forEach((ch) => ch.tick());
     this.ticker_rate = Date.now() - this.last_ticker_timestamp;
-    setTimeout(() => {
+    DarwinManager.tickerId = setTimeout(() => {
       this.ticker();
     }, 0);
   }
   tick() {
-    if (DarwinManager.pause) return;
+    if (this.pause) return;
     if (this.last_tick_timestamp + this.delta > Date.now()) return;
     this.last_tick_timestamp = Date.now();
     this.frame++;
@@ -105,8 +109,9 @@ export class DarwinManager {
         this.death /= 2;
       }
       if (this.darwins.length === 0) {
-        DarwinManager.pause = true;
-        this.onEnd();
+        this.pause = true;
+        console.log("^_^ ::: file: DarwinManager.tsx:114 ::: this.pause :\n", this.pause);
+        setTimeout(this.onEnd, 100);
       }
     } catch (error) {
       console.error("^_^ Log \n file: DarwinManager.tsx:70 \n error:", error);

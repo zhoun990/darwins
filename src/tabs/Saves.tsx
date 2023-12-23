@@ -9,7 +9,6 @@ export const SaveList = memo(() => {
   const { setEstate: setMainEstate } = useEstate("main");
   const { initialDarwinCount, autoRestart, holdSeed, saves, savedData, page, setEstate } =
     useEstate("persist");
-  console.log("^_^ Log \n file: Saves.tsx:9 \n saves:", saves);
 
   const onSave = (title = "") => {
     if (!title) {
@@ -40,27 +39,23 @@ export const SaveList = memo(() => {
         </button>
       </div>
       {saves.map((save, i) => (
-        <div
-          key={i}
-          className="button relative flex flex-col p-2"
-          onClick={() => {
-            if (savedData[save]?.initial_darwin_count) {
-              setMainEstate({
-                lastDMInstance: new DarwinManager(0, savedData[save]),
-              });
-            }
-          }}
-        >
+        <div key={i} className="button relative flex flex-col p-2">
           {save.substring(9)}
           <div className="flex z-0">
             <button onClick={() => onSave(save.substring(9))} className="ml-1">
               上書き保存
             </button>
-            <button className="ml-1 relative">
+            <button
+              className="ml-1 relative"
+              onClick={() => {
+                if (savedData[save]?.initial_darwin_count) {
+                  setMainEstate({
+                    lastDMInstance: new DarwinManager(0, savedData[save]),
+                  });
+                }
+              }}
+            >
               読込
-              <div className="opacity-0 hover:opacity-100 absolute w-full h-full border top-0 left-0">
-                <div className="absolute right-0 bottom-full w-[200px] flex flex-col items-end pb-2"></div>
-              </div>
             </button>
             <div
               className="ml-auto mr-2 button top-0 py-2 px-1"

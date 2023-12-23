@@ -18,10 +18,14 @@ function App() {
     darwinManagerInstance.onUpdate = () => setFrame(darwinManagerInstance.frame);
     darwinManagerInstance.onEnd = () => {
       setEstates.main({
-        lastDMInstance: new DarwinManager(
-          initialDarwinCount,
-          holdSeed ? lastDMInstance : undefined,
-          autoRestart
+        lastDMInstance: JSON.parse(
+          JSON.stringify(
+            new DarwinManager(
+              initialDarwinCount,
+              holdSeed ? lastDMInstance : undefined,
+              autoRestart
+            )
+          )
         ),
       });
     };
@@ -37,7 +41,9 @@ function App() {
     };
   }, [darwinManagerInstance, initialDarwinCount, autoRestart, holdSeed, lastDMInstance]);
   useEffect(() => {
-    setEstates.main({ lastDMInstance: new DarwinManager(initialDarwinCount) });
+    setEstates.main({
+      lastDMInstance: JSON.parse(JSON.stringify(new DarwinManager(initialDarwinCount))),
+    });
     return () => {
       darwinManagerInstance.terminate();
     };
@@ -87,13 +93,10 @@ function App() {
             }px] text-blue-100 z-10`}
           >
             <div
-              className={`absolute w-[${Chunk.size}px] h-[${Chunk.size}px] border border-gray-300`}
+              className={`absolute  border border-gray-300`}
+              style={{ width: Chunk.size, height: Chunk.size }}
             />
-            <div
-              className={`bg-gray-500 w-[${
-                Chunk.size * 2
-              }px] bg-opacity-75 pointer-events-none`}
-            >
+            <div className="bg-gray-500 bg-opacity-75 pointer-events-none absolute">
               <div> pop: {ch.darwins.length}</div>
               <div> foods: {N.round(ch.foods)}</div>
               <div> elevation: {N.round(ch.elevation)}</div>

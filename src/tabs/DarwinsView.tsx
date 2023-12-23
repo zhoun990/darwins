@@ -1,12 +1,13 @@
 import { DarwinManager } from "../main/DarwinManager";
 import { N } from "../main/NumericUtils";
-import { Darwin } from "../main/Darwin";
 import { setEstates, useEstate } from "../estate";
 import { ITEM_PER_PAGE } from "../App";
+import { Darwin } from "../main/Darwin";
 
 export const DarwinsView = () => {
   const { page, setEstate } = useEstate("persist");
   const DM = DarwinManager.getInstance(0);
+
   return (
     <div className="grow flex flex-col overflow-hidden">
       <div className="flex z-0 shrink-0 m-2">
@@ -35,7 +36,9 @@ export const DarwinsView = () => {
           onClick={() => {
             const n = Number(prompt("初期Pop数変更(Number)"));
             if (n > 0) {
-              setEstates.main({ lastDMInstance: new DarwinManager(n) });
+              setEstates.main({
+                lastDMInstance: JSON.parse(JSON.stringify(new DarwinManager(n))),
+              });
               setEstate({ initialDarwinCount: n });
             }
           }}
