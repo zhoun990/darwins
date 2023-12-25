@@ -26,9 +26,7 @@ export class DarwinManager {
   started_at = Date.now();
 
   static get pause() {
-    //: Accessor<boolean>
     return this.signal().pause;
-    // return createMemo(() => this.instance?.signal().pause);
   }
   static set pause(bool: boolean) {
     if (this.instance) {
