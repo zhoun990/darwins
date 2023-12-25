@@ -1,3 +1,4 @@
+import { createSignal } from "solid-js";
 import { Darwin } from "./Darwin";
 import { DarwinManager } from "./DarwinManager";
 import { N } from "./NumericUtils";
@@ -20,6 +21,15 @@ export class Chunk {
   darwins: Darwin[] = [];
   delta = 1000; //ms
   last_tick_timestamp = 0;
+  // signal = createSignal(this);
+  // get props() {
+  //   return this.signal[0]();
+  // }
+  // private onUpdate() {
+  //   const [getter, setter] = this.signal;
+  //   const instance = this;
+  //   setter(() => instance);
+  // }
   constructor(initial: {
     x: number;
     y: number;
@@ -79,7 +89,6 @@ export class Chunk {
     } catch (error) {
       console.error("^_^ Log \n file: Chunk.tsx:77 \n error:", error);
     }
-
   }
   eat(dw: Darwin) {
     const s = (dw.w * dw.h * dw.tall * (dw.speed / dw.weight)) / 1000;

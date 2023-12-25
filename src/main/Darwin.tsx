@@ -1,6 +1,7 @@
 import { N } from "./NumericUtils";
 import { DarwinManager } from "./DarwinManager";
 import { getObjectKeys } from "./utils";
+import { createSignal } from "solid-js";
 const direction = (from: number, to: number) => {
   const t = to % 3 === 0 && (from === 1 || from === 2);
   const b = from % 3 === 0 && (to === 1 || to === 2);
@@ -42,6 +43,15 @@ export class Darwin {
   last_tick_timestamp = 0;
 
   movement_path = [];
+  // signal = createSignal(this);
+  // get props() {
+  //   return this.signal[0]();
+  // }
+  // private onUpdate() {
+  //   const [getter, setter] = this.signal;
+  //   const instance = this;
+  //   setter(() => instance);
+  // }
   constructor(initial?: {
     [key in keyof Darwin]?: Darwin[key];
   }) {

@@ -1,6 +1,7 @@
-import { createEstate } from "@e-state/react";
+import { initEstate } from "@e-state/solid";
 import { DarwinManager } from "./main/DarwinManager";
-export const { useEstate, clearEstate, setEstates, store } = createEstate(
+
+export const { createEstate,setEstates } = initEstate(
   {
     main: {
       lastDMInstance: undefined as undefined | DarwinManager,

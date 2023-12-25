@@ -1,28 +1,22 @@
-import { ReactNode, useEffect, useState } from "react";
-import { useEstate } from "../estate";
-
+import { JSX } from "solid-js/jsx-runtime";
+import { createEstate } from "../estate";
+const { tab, setEstate } = createEstate("persist");
 export const Tabs = (
-  props: { children: ReactNode[]; tabs: string[] } & Omit<
-    React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>,
+  props: { children: JSX.Element[]; tabs: string[]; style?: JSX.CSSProperties } & Omit<
+    Omit<JSX.HTMLAttributes<HTMLDivElement>, "style">,
     "children"
   >
 ) => {
   const { children, style, tabs, ...others } = props;
-  const { tab, setEstate } = useEstate("persist");
-  // const [tab, setTab] = useState(0);
-  useEffect(() => {
-    console.log("^_^ Log \n file: App.tsx:249 \n tab:", tab);
-  }, [tab]);
   return (
-    <div style={{ flexDirection: "column", display: "flex", ...style,}} {...others}>
-      <div className="flex">
+    <div style={{ "flex-direction": "column", display: "flex", ...style }} {...others}>
+      <div class="flex">
         {tabs.map((title, i) => (
           <div
-            key={i}
             style={{}}
-            className={
-              "rounded-[8px] border-[1px] border-solid border-[transparent] text-[1em] font-medium [font-family:inherit] bg-[#1a1a1a] cursor-pointer [transition:border-color_0.25s] hover:border-[#646cff] outline-[4px_auto_-webkit-focus-ring-color] p-2 ml-2 rounded-b-none border-b-0 select-none grow last:mr-3 text-center max-w-[200px]" +
-              (i === tab ? " border-[#646cff]" : "")
+            class={
+              "rounded-[8px] border-[1px] border-solid text-[1em] font-medium [font-family:inherit] bg-[#1a1a1a] cursor-pointer [transition:border-color_0.25s] hover:border-[#646cff] outline-[4px_auto_-webkit-focus-ring-color] p-2 ml-2 rounded-b-none border-b-0 select-none grow last:mr-3 text-center max-w-[200px]" +
+              (i === tab() ? " border-[#646cff]" : " border-[transparent] ")
             }
             onClick={() => {
               setEstate({ tab: i });
@@ -33,7 +27,7 @@ export const Tabs = (
           </div>
         ))}
       </div>
-      <div className="bg-[#1a1a1a] grow overflow-auto flex flex-col">{children[tab]}</div>
+      <div class="bg-[#1a1a1a] grow overflow-auto flex flex-col">{children[tab()]}</div>
     </div>
   );
 };

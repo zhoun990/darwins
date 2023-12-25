@@ -2,6 +2,8 @@ import { N } from "./NumericUtils";
 import { Darwin } from "./Darwin";
 import { Chunk } from "./Chunk";
 import { getObjectKeys } from "./utils";
+import { Accessor, Signal, createMemo, createSignal } from "solid-js";
+import { createStore } from "solid-js/store";
 export class DarwinManager {
   private static instance: DarwinManager;
   static tickerId: NodeJS.Timeout;
@@ -9,8 +11,8 @@ export class DarwinManager {
   static width = 500;
   static height = 500;
   static max_pop = 1000;
+  private static cache: Record<string, any> = {};
   chunk_size = { w: 10, h: 10 };
-  // foods = 100;
   darwins: Darwin[] = [];
   frame = 0;
   pop = 0;
@@ -22,25 +24,46 @@ export class DarwinManager {
   last_ticker_timestamp = 0;
   ticker_rate = 0;
   started_at = Date.now();
-  private static cache: Record<string, any> = {};
+
   static get pause() {
-    return this.instance?.pause;
+    //: Accessor<boolean>
+    return this.signal().pause;
+    // return createMemo(() => this.instance?.signal().pause);
   }
   static set pause(bool: boolean) {
-    if (this.instance) this.instance.pause = bool;
+    if (this.instance) {
+      this.instance.pause = bool;
+      this.instance.onUpdate();
+    }
   }
   pause = true;
-
-  onUpdate = () => {};
-  onEnd = () => {};
+  static _signal: Signal<Exclude<DarwinManager, Function>>;
+  static get signal() {
+    const v = this._signal[0];
+    return v;
+  }
+  private onUpdate() {
+    const [getter, setter] = DarwinManager._signal;
+    const instance = this;
+    setter(() => ({ ...instance } as Exclude<this, Function>));
+  }
+  static onEnd = () => {};
+  static onInstanceReplace = (self: DarwinManager) => {};
   constructor(
     public initial_darwin_count: number,
     load?: DarwinManager,
     auto_start?: boolean
   ) {
     console.log("^_^ ::: file: DarwinManager.tsx:40 ::: load:\n", load);
-    // clearTimeout(DarwinManager.tickerId);
+    clearTimeout(DarwinManager.tickerId);
     DarwinManager.instance = this;
+    if (DarwinManager._signal) {
+    } else
+      DarwinManager._signal = createSignal({ ...this } as Exclude<
+        DarwinManager,
+        Function
+      >);
+    DarwinManager.onInstanceReplace(this);
     if (load) {
       getObjectKeys(load).forEach((key) => {
         if (
@@ -74,6 +97,8 @@ export class DarwinManager {
       }
     }
     this.started_at = Date.now();
+    this.onUpdate();
+
     if (auto_start) {
       this.pause = false;
       this.ticker();
@@ -89,6 +114,7 @@ export class DarwinManager {
     DarwinManager.tickerId = setTimeout(() => {
       this.ticker();
     }, 0);
+    // requestAnimationFrame(self.ticker);
   }
   tick() {
     if (this.pause) return;
@@ -111,7 +137,7 @@ export class DarwinManager {
       if (this.darwins.length === 0) {
         this.pause = true;
         console.log("^_^ ::: file: DarwinManager.tsx:114 ::: this.pause :\n", this.pause);
-        setTimeout(this.onEnd, 100);
+        setTimeout(DarwinManager.onEnd, 100);
       }
     } catch (error) {
       console.error("^_^ Log \n file: DarwinManager.tsx:70 \n error:", error);
@@ -183,7 +209,7 @@ export class DarwinManager {
     ch?.eat(dw);
   }
   static getChunk(x: number, y: number) {
-    return this.instance.chunks.find((ch) => ch.x === x && ch.y === y);
+    return this.signal().chunks.find((ch) => ch.x === x && ch.y === y);
   }
   static getChunkFromPos({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
     return this.getChunk(
@@ -193,7 +219,7 @@ export class DarwinManager {
   }
   static getPopDensity(lowest?: boolean) {
     const distribution = [0, 0, 0, 0];
-    this.instance.darwins.forEach((dw, i) => {
+    this.signal().darwins.forEach((dw, i) => {
       if (i % 2) {
         distribution[dw.getCurrentArea()]++;
       }
@@ -203,13 +229,14 @@ export class DarwinManager {
     );
   }
   static getPop() {
-    return this.instance.darwins.length;
+    return this.signal().darwins.length;
+    // return createMemo(() => this.instance.signal().darwins.length)();
   }
   static getFoods() {
-    return this.instance.chunks.reduce((sum, ch) => sum + ch.foods, 0);
+    return this.signal().chunks.reduce((sum, ch) => sum + ch.foods, 0);
   }
   static getBirthRate() {
-    return this.instance.birth_rate;
+    return this.signal().birth_rate;
   }
   getDarwinFromId(id: string): Darwin | undefined {
     return this.darwins.filter((dw) => dw.id === id)[0];
@@ -247,9 +274,14 @@ export class DarwinManager {
     // this.frame = 0;
     DarwinManager.pause = true;
   }
-  setPause(bool: boolean) {
+  static setPause(bool: boolean) {
+    console.log(
+      "^_^ ::: file: DarwinManager.tsx:259 ::: bool:\n",
+      DarwinManager.pause,
+      bool
+    );
     DarwinManager.pause = bool;
-    this.ticker();
+    this.instance.ticker();
     // if (!bool) {
     //   this.tick();
     //   this.darwins.forEach((dw) => dw.tick());

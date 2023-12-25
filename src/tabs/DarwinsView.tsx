@@ -1,38 +1,44 @@
 import { DarwinManager } from "../main/DarwinManager";
 import { N } from "../main/NumericUtils";
-import { setEstates, useEstate } from "../estate";
 import { ITEM_PER_PAGE } from "../App";
 import { Darwin } from "../main/Darwin";
+import { createEstate, setEstates } from "../estate";
+import { JSX } from "solid-js/jsx-runtime";
+import { createEffect } from "solid-js";
 
 export const DarwinsView = () => {
-  const { page, setEstate } = useEstate("persist");
-  const DM = DarwinManager.getInstance(0);
-
+  const { page, setEstate, initialDarwinCount } = createEstate("persist");
+  createEffect(() => {
+    if (page() > Math.floor(DarwinManager.getPop() / ITEM_PER_PAGE)) {
+      setEstate({ page: Math.floor(DarwinManager.getPop() / ITEM_PER_PAGE) });
+    }
+  });
   return (
-    <div className="grow flex flex-col overflow-hidden">
-      <div className="flex z-0 shrink-0 m-2">
+    <div class="grow flex flex-col overflow-hidden">
+      <div class="flex z-0 shrink-0 m-2">
         <button
-          className="ml-1 border-white"
-          style={{ opacity: page > 0 ? 1 : 0.7 }}
+          class="ml-1 border-white"
+          style={{ opacity: page() > 0 ? 1 : 0.7 }}
           onClick={() => {
-            page > 0 && setEstate({ page: (c) => c - 1 });
+            if (page() > 0) setEstate({ page: (c) => c - 1 });
           }}
         >
           前
         </button>
         <button
           onClick={() => {
-            DarwinManager.getPop() > (page + 1) * 20 && setEstate({ page: (c) => c + 1 });
+            if (DarwinManager.getPop() > (page() + 1) * ITEM_PER_PAGE)
+              setEstate({ page: (c) => c + 1 });
           }}
           style={{
-            opacity: DarwinManager.getPop() > (page + 1) * ITEM_PER_PAGE ? 1 : 0.7,
+            opacity: DarwinManager.getPop() > (page() + 1) * ITEM_PER_PAGE ? 1 : 0.7,
           }}
-          className="ml-1 border-white"
+          class="ml-1 border-white"
         >
           次
         </button>
         <button
-          className="w-[100px] ml-1 border-white p-2"
+          class="w-[100px] ml-1 border-white p-2"
           onClick={() => {
             const n = Number(prompt("初期Pop数変更(Number)"));
             if (n > 0) {
@@ -43,69 +49,66 @@ export const DarwinsView = () => {
             }
           }}
         >
-          Pop: {DarwinManager.getPop()}
+          Pop: {DarwinManager.getPop()}({initialDarwinCount()})
         </button>
-        <div className="ml-1 border-l pl-1 w-[100px] text-center">
+        <div class="ml-1 border-l pl-1 w-[100px] text-center">
           Foods:
           <br />
           {N.formatNumber(DarwinManager.getFoods())}
         </div>
-        <div className="ml-1 border-l pl-1 w-[90px] text-center">
+        <div class="ml-1 border-l pl-1 w-[90px] text-center">
           b/d:
           <br />
           {N.round(DarwinManager.getBirthRate(), 3)}
         </div>
-        <div className="ml-1 border-l pl-1 w-[60px] text-center">
+        <div class="ml-1 border-l pl-1 w-[60px] text-center">
           rate:
           <br />
-          {DM.ticker_rate}
+          {DarwinManager.signal().ticker_rate}
         </div>
       </div>
-      <div className="overflow-auto w-full grow flex flex-col h-0">
-        {DM.darwins.map((dw, i) => {
+      <div class="overflow-auto w-full grow flex flex-col h-0">
+        {DarwinManager.signal().darwins.map((dw, i) => {
           if (
-            i < (page + 1) * ITEM_PER_PAGE &&
-            i >= (page + 1) * ITEM_PER_PAGE - ITEM_PER_PAGE
+            i < (page() + 1) * ITEM_PER_PAGE &&
+            i >= (page() + 1) * ITEM_PER_PAGE - ITEM_PER_PAGE
           )
             return (
               <div
-                key={i}
-                className={
+                class={
                   "min-h-[50px] border-b-4 flex items-center shrink-0 border-white" +
                   ` border-[${dw.color}] border-opacity-75`
                 }
               >
-                <div className="flex flex-wrap">
+                <div class="flex flex-wrap">
                   <div
-                    className="w-[5px] h-[50px] shrink-0"
+                    class="w-[5px] h-[50px] shrink-0"
                     style={{
-                      backgroundColor: dw.color,
+                      "background-color": dw.color,
                     }}
                   />
-                  <Item color={dw.color} style={{ width: 50 }}>
-                    <div className="leading-none">hp</div>
-                    <div className="leading-none">{N.round(dw.hp)}</div>
-                    <div className="leading-none">/{N.round(dw.default_hp)}</div>
+                  <Item color={dw.color} style={{ width: 50 + "px" }}>
+                    <div class="leading-none">hp</div>
+                    <div class="leading-none">{N.round(dw.hp)}</div>
+                    <div class="leading-none">/{N.round(dw.default_hp)}</div>
                   </Item>
-                  <Item color={dw.color} style={{ width: 50 }}>
-                    <div className="leading-none">spwnct</div>
-                    <div className="leading-none">{N.round(dw.rest_spawn_cooltime)}</div>
-                    <div className="leading-none">
-                      /{N.round(dw.default_spawn_cooltime)}
-                    </div>
+                  <Item color={dw.color} style={{ width: 50 + "px" }}>
+                    <div class="leading-none">spwnct</div>
+                    <div class="leading-none">{N.round(dw.rest_spawn_cooltime)}</div>
+                    <div class="leading-none">/{N.round(dw.default_spawn_cooltime)}</div>
                   </Item>
-                  <Item color={dw.color} style={{ width: 50 }}>
-                    <div className="leading-none">spwna.</div>
-                    <div className="leading-none">_times</div>
-                    <div className="leading-none">
+                  <Item color={dw.color} style={{ width: 50 + "px" }}>
+                    <div class="leading-none">spwna.</div>
+                    <div class="leading-none">_times</div>
+                    <div class="leading-none">
                       {N.round(dw.rest_spawnable_times)}/
                       {N.round(dw.default_spawnable_times)}
                     </div>
                   </Item>
-                  <Item color={dw.color} style={{ width: 50 }}>
-                    <div className="leading-none">life</div>
-                    <div className="leading-none">{N.round(dw.frame)}</div>
-                    <div className="leading-none">/{N.round(dw.lifetime)}</div>
+                  <Item color={dw.color} style={{ width: 50 + "px" }}>
+                    <div class="leading-none">life</div>
+                    <div class="leading-none">{N.round(dw.frame)}</div>
+                    <div class="leading-none">/{N.round(dw.lifetime)}</div>
                   </Item>
                   {(
                     [
@@ -126,7 +129,7 @@ export const DarwinsView = () => {
                       "target_area",
                     ] as (keyof Darwin)[]
                   ).map((k, i) => (
-                    <Item key={i} color={dw.color} style={{ minWidth: 40 }}>
+                    <Item color={dw.color} style={{ "min-width": 40 + "px" }}>
                       <div>{k}</div>
                       <div>
                         {N.isNumber(dw[k]) ? N.round(dw[k] as number) : (dw[k] as string)}
@@ -142,16 +145,11 @@ export const DarwinsView = () => {
     </div>
   );
 };
-const Item = (
-  props: { color: string } & React.DetailedHTMLProps<
-    React.HTMLAttributes<HTMLDivElement>,
-    HTMLDivElement
-  >
-) => {
-  const { color, className, ...others } = props;
+const Item = (props: { color: string } & JSX.HTMLAttributes<HTMLDivElement>) => {
+  const { color, class: className, ...others } = props;
   return (
     <div
-      className={
+      class={
         className +
         ` border-r border-t flex flex-col items-center overflow-hidden shrink-0 grow border-[${color}] border-opacity-75`
       }

@@ -1,44 +1,38 @@
+import { createEstate } from "../estate";
 import { DarwinManager } from "../main/DarwinManager";
-import { N } from "../main/NumericUtils";
-import { useEstate } from "../estate";
-import { ITEM_PER_PAGE } from "../App";
 
 export const Environment = () => {
-  const darwinManagerInstance = DarwinManager.getInstance(0);
-  const { setEstate: setMainEstate } = useEstate("main");
-  const { initialDarwinCount, autoRestart, holdSeed, saves, savedData, page, setEstate } =
-    useEstate("persist");
+  const { autoRestart, holdSeed, setEstate } = createEstate("persist");
   return (
-    <div className="flex flex-col">
-      
-      <div className="flex items-center shrink-0">
+    <div class="flex flex-col">
+      <div class="flex items-center shrink-0">
         <input
           type="checkbox"
           name="auto-restart"
           id="auto-restart"
-          defaultChecked={autoRestart}
+          checked={autoRestart()}
           onChange={() => {
             setEstate({ autoRestart: !autoRestart });
           }}
-          className="ml-2"
+          class="ml-2"
         />
-        <label htmlFor="auto-restart" className="ml-2">
+        <label for="auto-restart" class="ml-2">
           Auto Restart
         </label>
       </div>
-      <div className="flex items-center shrink-0">
+      <div class="flex items-center shrink-0">
         <input
           type="checkbox"
           name="hold-seed"
           id="hold-seed"
-          defaultChecked={holdSeed}
+          checked={holdSeed()}
           onChange={() => {
             console.log("^_^ Log \n file: Environment.tsx:60 \n onChange:");
-            setEstate({ holdSeed: !holdSeed });
+            setEstate({ holdSeed: !holdSeed() });
           }}
-          className="ml-2"
+          class="ml-2"
         />
-        <label htmlFor="hold-seed" className="ml-2">
+        <label for="hold-seed" class="ml-2">
           Restart with same seed
         </label>
       </div>
