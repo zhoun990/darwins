@@ -6,7 +6,7 @@ import { Accessor, Signal, createMemo, createSignal } from "solid-js";
 import { createStore } from "solid-js/store";
 export class DarwinManager {
   private static instance: DarwinManager;
-  static tickerId: NodeJS.Timeout;
+  static tickerId: number; //NodeJS.Timeout;
   chunks: Chunk[] = [];
   static width = 500;
   static height = 500;
@@ -17,11 +17,11 @@ export class DarwinManager {
   frame = 0;
   pop = 0;
   birth_rate = 1;
-  birth = 0;
-  death = 0;
+  birth = [0];
+  death = [0];
   delta = 100; //ms
   last_tick_timestamp = 0;
-  last_ticker_timestamp = 0;
+  static last_ticker_timestamp = 0;
   ticker_rate = 0;
   started_at = Date.now();
 
@@ -32,18 +32,49 @@ export class DarwinManager {
     if (this.instance) {
       this.instance.pause = bool;
       this.instance.onUpdate();
+      // const [getter, setter] = DarwinManager._signal;
+      // setter((pv) => ({ ...pv, pause: bool } as Exclude<DarwinManager, Function>));
     }
   }
   pause = true;
   static _signal: Signal<Exclude<DarwinManager, Function>>;
   static get signal() {
-    const v = this._signal[0];
-    return v;
+    return this._signal?.[0];
   }
-  private onUpdate() {
+  private onUpdate(msg?: string) {
     const [getter, setter] = DarwinManager._signal;
-    const instance = this;
-    setter(() => ({ ...instance } as Exclude<this, Function>));
+    // console.log(
+    //   "^_^ ::: file: DarwinManager.tsx:51 ::: msg:\n",
+    //   msg,
+    //   this.darwins.length
+    // );
+    performance.mark("onUpdate-1-" + this.frame);
+    const instance = { ...this };
+    performance.mark("onUpdate-2-" + this.frame);
+
+    // if (this.darwins.length === 1000) {
+    //   console.log(this);
+    // }
+    setTimeout(() => {
+      setter(instance as Exclude<this, Function>);
+    }, 0);
+    performance.mark("onUpdate-3-" + this.frame);
+
+    performance.measure(
+      "pfm-onUpdate-measure-" + this.frame,
+      "onUpdate-1-" + this.frame,
+      "onUpdate-2-" + this.frame
+    );
+    performance.measure(
+      "pfm-onUpdate-measure-" + this.frame,
+      "onUpdate-2-" + this.frame,
+      "onUpdate-3-" + this.frame
+    );
+    const results = performance.getEntriesByName("pfm-onUpdate-measure-" + this.frame);
+    // console.log(
+    //   "処理時間 : " + results[0].duration + "ミリ秒,onUpdate-" + this.frame,
+    //   "\n処理時間 : " + results[1].duration + "ミリ秒,onUpdate-" + this.frame
+    // );
   }
   static onEnd = () => {};
   static onInstanceReplace = (self: DarwinManager) => {};
@@ -53,7 +84,8 @@ export class DarwinManager {
     auto_start?: boolean
   ) {
     console.log("^_^ ::: file: DarwinManager.tsx:40 ::: load:\n", load);
-    clearTimeout(DarwinManager.tickerId);
+    cancelAnimationFrame(DarwinManager.tickerId);
+    // clearTimeout(DarwinManager.tickerId);
     DarwinManager.instance = this;
     if (DarwinManager._signal) {
     } else
@@ -95,8 +127,11 @@ export class DarwinManager {
       }
     }
     this.started_at = Date.now();
-    this.onUpdate();
-
+    this.onUpdate("2");
+    console.log(
+      "^_^ ::: file: DarwinManager.tsx:116 ::: getter().darwins.length:\n",
+      DarwinManager._signal[0]().darwins.length
+    );
     if (auto_start) {
       this.pause = false;
       this.ticker();
@@ -104,35 +139,62 @@ export class DarwinManager {
   }
   ticker() {
     if (this.pause) return;
-    this.last_ticker_timestamp = Date.now();
-    this.tick();
+    const f = this.frame;
+    DarwinManager.last_ticker_timestamp = Date.now();
+
+    performance.mark("ticker-" + f);
+    this.tick(f);
     this.darwins.forEach((dw) => dw.tick());
     this.chunks.forEach((ch) => ch.tick());
-    this.ticker_rate = Date.now() - this.last_ticker_timestamp;
-    DarwinManager.tickerId = setTimeout(() => {
+    this.ticker_rate = Date.now() - DarwinManager.last_ticker_timestamp;
+    performance.measure(
+      //
+      "pfm-ticker-measure-" + f, // バッファの名前を指定してあげる
+      "ticker-" + f // 開始点（１）
+    );
+    const results = performance.getEntriesByName("pfm-ticker-measure-" + f); // バッファの名前から結果を取得（１）～（２）
+    console.log("処理時間 : " + results[0].duration + "ミリ秒,ticker-" + f); // （１）～（２）
+    DarwinManager.tickerId = requestAnimationFrame(() => {
       this.ticker();
-    }, 0);
+    });
     // requestAnimationFrame(self.ticker);
   }
-  tick() {
-    if (this.pause) return;
-    if (this.last_tick_timestamp + this.delta > Date.now()) return;
+  tick(f?: number) {
+    if (this.pause) return false;
+    if (this.last_tick_timestamp + this.delta > DarwinManager.last_ticker_timestamp)
+      return false;
+    performance.mark("tick-p1-" + this.frame);
+
     this.last_tick_timestamp = Date.now();
-    this.frame++;
+
     try {
+      performance.mark("tick-p2-" + this.frame);
+
       const pop = this.darwins.length;
-      // this.foods += Math.max(0, N.random(90 - pop / 3, 150 - pop));
-      const before = this.darwins.length;
       this.darwins = this.darwins.filter((dw) => dw.hp > 0);
       this.pop = this.darwins.length;
-      this.death += before - this.pop;
-      this.birth_rate = (this.birth + 1) / (this.death + 1);
-      // this.birth = 0;
-      if (this.frame % 100 === 0) {
-        this.birth /= 2;
-        this.death /= 2;
+      this.death.push(pop - this.pop);
+      this.birth.push(0);
+      this.birth_rate =
+        Math.max(
+          1,
+          this.birth.reduce((pv, v) => pv + v, 0)
+        ) /
+        Math.max(
+          1,
+          this.death.reduce((pv, v) => pv + v, 0)
+        );
+      performance.mark("tick-p3-" + this.frame);
+
+      if (this.birth.length > 10) {
+        this.birth.shift();
+        console.log("^_^ ::: file: DarwinManager.tsx:191 ::: this.birth:\n", this.birth);
       }
-      if (this.darwins.length === 0) {
+      if (this.death.length > 10) {
+        this.death.shift();
+        console.log("^_^ ::: file: DarwinManager.tsx:195 ::: this.death:\n", this.death);
+      }
+      if (this.pop === 0) {
         this.pause = true;
         console.log("^_^ ::: file: DarwinManager.tsx:114 ::: this.pause :\n", this.pause);
         setTimeout(DarwinManager.onEnd, 100);
@@ -140,10 +202,61 @@ export class DarwinManager {
     } catch (error) {
       console.error("^_^ Log \n file: DarwinManager.tsx:70 \n error:", error);
     }
-    this.onUpdate();
+    performance.mark("tick-p4-" + this.frame);
+    this.onUpdate(
+      (f === this.frame ? "true" : "false") + " f1:" + this.frame + " f2:" + f
+    );
+    performance.mark("tick-p5-" + this.frame);
+
+    performance.measure(
+      //
+      "pfm-measure-" + this.frame,
+      "tick-p1-" + this.frame
+    );
+    performance.measure(
+      //
+      "pfm-measure-" + this.frame,
+      "tick-p1-" + this.frame,
+      "tick-p2-" + this.frame
+    );
+    performance.measure(
+      //
+      "pfm-measure-" + this.frame,
+      "tick-p2-" + this.frame,
+      "tick-p3-" + this.frame
+    );
+    performance.measure(
+      //
+      "pfm-measure-" + this.frame,
+      "tick-p3-" + this.frame,
+      "tick-p4-" + this.frame
+    );
+    performance.measure(
+      //
+      "pfm-measure-" + this.frame,
+      "tick-p4-" + this.frame,
+      "tick-p5-" + this.frame
+    );
+    performance.measure(
+      //
+      "pfm-measure-" + this.frame,
+      "tick-p5-" + this.frame
+    );
+    const results = performance.getEntriesByName("pfm-measure-" + this.frame);
+    console.log(
+      "処理時間 : " + results[0].duration + "ミリ秒,tick-" + this.frame,
+      "\n処理時間 : " + results[1].duration + "ミリ秒,tick-" + this.frame,
+      "\n処理時間 : " + results[2].duration + "ミリ秒,tick-" + this.frame,
+      "\n処理時間 : " + results[3].duration + "ミリ秒,tick-" + this.frame,
+      "\n処理時間 : " + results[4].duration + "ミリ秒,tick-" + this.frame,
+      "\n処理時間 : " + results[5].duration + "ミリ秒,tick-" + this.frame
+    );
+    this.frame++;
+    return true;
   }
+
   static born(a: Darwin, b: Darwin) {
-    if (a.sex === b.sex || this.getPop() >= this.max_pop) return;
+    if (a.sex === b.sex || this.instance.darwins.length >= this.max_pop) return;
     const sex = N.random(0, 1);
     const mixer = (v1: number, v2: number, difficulty = 100) => {
       // const cached = this.getMixerCache(v1, v2);
@@ -200,14 +313,14 @@ export class DarwinManager {
           : 0,
       })
     );
-    this.instance.birth++;
+    this.instance.birth[this.instance.birth.length - 1]++;
   }
   static eat(dw: Darwin) {
     const ch = this.getChunkFromPos(dw);
     ch?.eat(dw);
   }
   static getChunk(x: number, y: number) {
-    return this.signal().chunks.find((ch) => ch.x === x && ch.y === y);
+    return this.instance.chunks.find((ch) => ch.x === x && ch.y === y);
   }
   static getChunkFromPos({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
     return this.getChunk(
@@ -217,7 +330,7 @@ export class DarwinManager {
   }
   static getPopDensity(lowest?: boolean) {
     const distribution = [0, 0, 0, 0];
-    this.signal().darwins.forEach((dw, i) => {
+    this.instance.darwins.forEach((dw, i) => {
       if (i % 2) {
         distribution[dw.getCurrentArea()]++;
       }
@@ -226,15 +339,17 @@ export class DarwinManager {
       lowest ? Math.min(...distribution) : Math.max(...distribution)
     );
   }
-  static getPop() {
-    return this.signal().darwins.length;
+  static getPopSignal() {
+    return createMemo(() => this.signal().darwins.length);
     // return createMemo(() => this.instance.signal().darwins.length)();
   }
-  static getFoods() {
-    return this.signal().chunks.reduce((sum, ch) => sum + ch.foods, 0);
+  static getFoodsSignal() {
+    return createMemo(() =>
+      this.signal?.()?.chunks.reduce((sum, ch) => sum + ch.foods, 0)
+    );
   }
-  static getBirthRate() {
-    return this.signal().birth_rate;
+  static getBirthRateSignal() {
+    return createMemo(() => this.signal().birth_rate);
   }
   getDarwinFromId(id: string): Darwin | undefined {
     return this.darwins.filter((dw) => dw.id === id)[0];
@@ -273,13 +388,9 @@ export class DarwinManager {
     DarwinManager.pause = true;
   }
   static setPause(bool: boolean) {
-    console.log(
-      "^_^ ::: file: DarwinManager.tsx:259 ::: bool:\n",
-      DarwinManager.pause,
-      bool
-    );
+    console.log("^_^ ::: file: DarwinManager.tsx:259 ::: bool:\n", bool);
     DarwinManager.pause = bool;
-    this.instance.ticker();
+    if (!bool) this.instance.ticker();
     // if (!bool) {
     //   this.tick();
     //   this.darwins.forEach((dw) => dw.tick());

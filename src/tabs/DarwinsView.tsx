@@ -7,10 +7,13 @@ import { JSX } from "solid-js/jsx-runtime";
 import { createEffect } from "solid-js";
 
 export const DarwinsView = () => {
+  const pop = DarwinManager.getPopSignal();
+  const foods = DarwinManager.getFoodsSignal();
+  const birthRate = DarwinManager.getBirthRateSignal();
   const { page, setEstate, initialDarwinCount } = createEstate("persist");
   createEffect(() => {
-    if (page() > Math.floor(DarwinManager.getPop() / ITEM_PER_PAGE)) {
-      setEstate({ page: Math.floor(DarwinManager.getPop() / ITEM_PER_PAGE) });
+    if (page() > Math.floor(pop() / ITEM_PER_PAGE)) {
+      setEstate({ page: Math.floor(pop() / ITEM_PER_PAGE) });
     }
   });
   return (
@@ -27,18 +30,17 @@ export const DarwinsView = () => {
         </button>
         <button
           onClick={() => {
-            if (DarwinManager.getPop() > (page() + 1) * ITEM_PER_PAGE)
-              setEstate({ page: (c) => c + 1 });
+            if (pop() > (page() + 1) * ITEM_PER_PAGE) setEstate({ page: (c) => c + 1 });
           }}
           style={{
-            opacity: DarwinManager.getPop() > (page() + 1) * ITEM_PER_PAGE ? 1 : 0.7,
+            opacity: pop() > (page() + 1) * ITEM_PER_PAGE ? 1 : 0.7,
           }}
           class="ml-1 border-white"
         >
           次
         </button>
         <button
-          class="w-[100px] ml-1 border-white p-2"
+          class="w-[100px] ml-1 border-white p-2 py-0"
           onClick={() => {
             const n = Number(prompt("初期Pop数変更(Number)"));
             if (n > 0) {
@@ -49,17 +51,17 @@ export const DarwinsView = () => {
             }
           }}
         >
-          Pop: {DarwinManager.getPop()}({initialDarwinCount()})
+          Pop: {pop()}({initialDarwinCount()})
         </button>
         <div class="ml-1 border-l pl-1 w-[100px] text-center">
           Foods:
           <br />
-          {N.formatNumber(DarwinManager.getFoods())}
+          {N.formatNumber(foods())}
         </div>
         <div class="ml-1 border-l pl-1 w-[90px] text-center">
           b/d:
           <br />
-          {N.round(DarwinManager.getBirthRate(), 3)}
+          {N.round(birthRate(), 3)}
         </div>
         <div class="ml-1 border-l pl-1 w-[60px] text-center">
           rate:

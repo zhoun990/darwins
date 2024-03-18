@@ -52,8 +52,9 @@ export class Chunk {
   }
   tick() {
     if (DarwinManager.pause) return;
-    if (this.last_tick_timestamp + this.delta > Date.now()) return;
-    this.last_tick_timestamp = Date.now();
+    if (this.last_tick_timestamp + this.delta > DarwinManager.last_ticker_timestamp)
+      return;
+    this.last_tick_timestamp = DarwinManager.last_ticker_timestamp;
     try {
       this.frame++;
       this.darwins = DarwinManager.getDarwinsFromArea({

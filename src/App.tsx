@@ -14,6 +14,7 @@ const { initialDarwinCount, autoRestart, holdSeed, saves, page, setEstate } =
 const [DM, setDM] = createSignal(DarwinManager.getInstance(0));
 function App() {
   DarwinManager.onEnd = () => {
+    console.log("^_^ ::: file: App.tsx:17 ::: onEnd:\n");
     setEstates.main({
       lastDMInstance: JSON.parse(
         JSON.stringify(
@@ -27,6 +28,7 @@ function App() {
     });
   };
   DarwinManager.onInstanceReplace = (instance) => {
+    console.log("^_^ ::: file: App.tsx:33 ::: onInstanceReplace:\n", instance);
     setDM(instance);
   };
   const handleKeyDown = (e: KeyboardEvent) => {
@@ -39,7 +41,7 @@ function App() {
     document.removeEventListener("keydown", handleKeyDown);
   });
   setEstates.main({
-    lastDMInstance: JSON.parse(JSON.stringify(new DarwinManager(initialDarwinCount()))),
+    lastDMInstance: structuredClone(new DarwinManager(initialDarwinCount())),
   });
   const pause = () => {
     DarwinManager.setPause(!DarwinManager.pause);

@@ -17,9 +17,6 @@ const Item = ({ i }: { i: number }) => {
   const ch = createMemo(() => ({ ...DarwinManager.signal().chunks[i] }), undefined, {
     equals: (a, b) => a.frame === b.frame,
   });
-  createEffect(() => {
-    console.log("^_^ ::: file: Chunks.tsx:18 ::: ch:\n", ch());
-  });
   const size = Chunk.size;
 
   return (
