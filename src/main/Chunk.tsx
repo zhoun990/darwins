@@ -12,11 +12,13 @@ export class Chunk {
   w = Chunk.size;
   h = Chunk.size;
   elevation = N.random(1, N.random(1, 50));
-  temperature = N.random(N.random(-40, 0), N.random(0, 40));
-  sunlight = N.random(0, N.random(0, 100));
+  temperature = 0;
+  /**日照により得られる温度の最大値 */
+  sunlight = N.random(0, N.random(0, 50));
+  /**標高1地点における平均温度 */
+  geothermal = N.random(N.random(-50, 0), N.random(0, 400));
+  /**エリア体積に対する水分割合 */
   water = N.random(0, N.random(0, 100));
-  oxygen = N.random(0, N.random(0, 100));
-  carbon_dioxide = N.random(0, N.random(0, 100));
   foods = N.random(500, 1500);
   darwins: Darwin[] = [];
   delta = 1000; //ms
@@ -49,6 +51,9 @@ export class Chunk {
         this[key] = initial[key];
       }
     }
+    if (!initial.temperature) {
+      this.temperature = this.get_target_temperature();
+    }
   }
   tick() {
     if (DarwinManager.pause) return;
@@ -63,11 +68,8 @@ export class Chunk {
         w: Chunk.size,
         h: Chunk.size,
       });
-      this.sunlight += N.random(-100, 100) / 100;
-      this.temperature = mx(
-        -40,
-        mn(40, (this.temperature + this.sunlight * (this.sunlight / this.water)) / 4)
-      );
+      this.sunlight = mx(0, mn(100, this.sunlight + N.random(-100, 100) / 1000));
+      this.temperature = (this.get_target_temperature() + this.temperature * 3) / 4;
 
       const addFoods =
         (this.sunlight *
@@ -83,9 +85,9 @@ export class Chunk {
         DarwinManager.getChunk(this.x, this.y + 1)!,
       ].filter((ch) => ch);
       connectedChunks.forEach((target) => {
-        this.temperature = (this.temperature + target.temperature) / 2;
-        this.oxygen = (this.oxygen + target.oxygen) / 2;
-        this.carbon_dioxide = (this.carbon_dioxide + target.carbon_dioxide) / 2;
+        this.temperature = (this.temperature * 5 + target.temperature) / 6;
+        // this.oxygen = (this.oxygen + target.oxygen) / 2;
+        // this.carbon_dioxide = (this.carbon_dioxide + target.carbon_dioxide) / 2;
       });
     } catch (error) {
       console.error("^_^ Log \n file: Chunk.tsx:77 \n error:", error);
@@ -99,5 +101,14 @@ export class Chunk {
       this.foods = 0;
       dw.penalty = Math.abs(p) * (this.darwins.length / 2);
     }
+  }
+  get_target_temperature() {
+    let temp = this.geothermal / Math.sqrt(this.elevation + 10);
+    let season_effect = DarwinManager.getSeason();
+    if (season_effect === 3) season_effect = 1;
+    temp += this.sunlight / (3 - season_effect);
+    temp -= temp * (this.water / 100);
+
+    return temp;
   }
 }

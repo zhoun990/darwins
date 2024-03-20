@@ -9,7 +9,7 @@ import { Chunks } from "./ui/Chunks";
 import { Darwins } from "./ui/Darwins";
 export const ITEM_PER_PAGE = 50;
 const { lastDMInstance } = createEstate("main");
-const { initialDarwinCount, autoRestart, holdSeed, saves, page, setEstate } =
+const { initialDarwinCount, autoRestart, holdSeed, saves, page, max_pop, setEstate } =
   createEstate("persist");
 const [DM, setDM] = createSignal(DarwinManager.getInstance(0));
 function App() {
@@ -31,6 +31,9 @@ function App() {
     console.log("^_^ ::: file: App.tsx:33 ::: onInstanceReplace:\n", instance);
     setDM(instance);
   };
+  createEffect(() => {
+    DarwinManager.max_pop = max_pop();
+  });
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === " ") {
       DarwinManager.setPause(!DarwinManager.pause);

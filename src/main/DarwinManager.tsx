@@ -142,18 +142,18 @@ export class DarwinManager {
     const f = this.frame;
     DarwinManager.last_ticker_timestamp = Date.now();
 
-    performance.mark("ticker-" + f);
+    // performance.mark("ticker-" + f);
     this.tick(f);
     this.darwins.forEach((dw) => dw.tick());
     this.chunks.forEach((ch) => ch.tick());
     this.ticker_rate = Date.now() - DarwinManager.last_ticker_timestamp;
-    performance.measure(
-      //
-      "pfm-ticker-measure-" + f, // バッファの名前を指定してあげる
-      "ticker-" + f // 開始点（１）
-    );
-    const results = performance.getEntriesByName("pfm-ticker-measure-" + f); // バッファの名前から結果を取得（１）～（２）
-    console.log("処理時間 : " + results[0].duration + "ミリ秒,ticker-" + f); // （１）～（２）
+    // performance.measure(
+    //   //
+    //   "pfm-ticker-measure-" + f, // バッファの名前を指定してあげる
+    //   "ticker-" + f // 開始点（１）
+    // );
+    // const results = performance.getEntriesByName("pfm-ticker-measure-" + f); // バッファの名前から結果を取得（１）～（２）
+    // console.log("処理時間 : " + results[0].duration + "ミリ秒,ticker-" + f); // （１）～（２）
     DarwinManager.tickerId = requestAnimationFrame(() => {
       this.ticker();
     });
@@ -163,12 +163,12 @@ export class DarwinManager {
     if (this.pause) return false;
     if (this.last_tick_timestamp + this.delta > DarwinManager.last_ticker_timestamp)
       return false;
-    performance.mark("tick-p1-" + this.frame);
+    // performance.mark("tick-p1-" + this.frame);
 
     this.last_tick_timestamp = Date.now();
 
     try {
-      performance.mark("tick-p2-" + this.frame);
+      // performance.mark("tick-p2-" + this.frame);
 
       const pop = this.darwins.length;
       this.darwins = this.darwins.filter((dw) => dw.hp > 0);
@@ -184,80 +184,85 @@ export class DarwinManager {
           1,
           this.death.reduce((pv, v) => pv + v, 0)
         );
-      performance.mark("tick-p3-" + this.frame);
+      // performance.mark("tick-p3-" + this.frame);
 
       if (this.birth.length > 10) {
         this.birth.shift();
-        console.log("^_^ ::: file: DarwinManager.tsx:191 ::: this.birth:\n", this.birth);
+        // console.log("^_^ ::: file: DarwinManager.tsx:191 ::: this.birth:\n", this.birth);
       }
       if (this.death.length > 10) {
         this.death.shift();
-        console.log("^_^ ::: file: DarwinManager.tsx:195 ::: this.death:\n", this.death);
+        // console.log("^_^ ::: file: DarwinManager.tsx:195 ::: this.death:\n", this.death);
       }
       if (this.pop === 0) {
         this.pause = true;
-        console.log("^_^ ::: file: DarwinManager.tsx:114 ::: this.pause :\n", this.pause);
+        // console.log("^_^ ::: file: DarwinManager.tsx:114 ::: this.pause :\n", this.pause);
         setTimeout(DarwinManager.onEnd, 100);
       }
     } catch (error) {
       console.error("^_^ Log \n file: DarwinManager.tsx:70 \n error:", error);
     }
-    performance.mark("tick-p4-" + this.frame);
+    // performance.mark("tick-p4-" + this.frame);
     this.onUpdate(
       (f === this.frame ? "true" : "false") + " f1:" + this.frame + " f2:" + f
     );
-    performance.mark("tick-p5-" + this.frame);
+    // performance.mark("tick-p5-" + this.frame);
 
-    performance.measure(
-      //
-      "pfm-measure-" + this.frame,
-      "tick-p1-" + this.frame
-    );
-    performance.measure(
-      //
-      "pfm-measure-" + this.frame,
-      "tick-p1-" + this.frame,
-      "tick-p2-" + this.frame
-    );
-    performance.measure(
-      //
-      "pfm-measure-" + this.frame,
-      "tick-p2-" + this.frame,
-      "tick-p3-" + this.frame
-    );
-    performance.measure(
-      //
-      "pfm-measure-" + this.frame,
-      "tick-p3-" + this.frame,
-      "tick-p4-" + this.frame
-    );
-    performance.measure(
-      //
-      "pfm-measure-" + this.frame,
-      "tick-p4-" + this.frame,
-      "tick-p5-" + this.frame
-    );
-    performance.measure(
-      //
-      "pfm-measure-" + this.frame,
-      "tick-p5-" + this.frame
-    );
-    const results = performance.getEntriesByName("pfm-measure-" + this.frame);
-    console.log(
-      "処理時間 : " + results[0].duration + "ミリ秒,tick-" + this.frame,
-      "\n処理時間 : " + results[1].duration + "ミリ秒,tick-" + this.frame,
-      "\n処理時間 : " + results[2].duration + "ミリ秒,tick-" + this.frame,
-      "\n処理時間 : " + results[3].duration + "ミリ秒,tick-" + this.frame,
-      "\n処理時間 : " + results[4].duration + "ミリ秒,tick-" + this.frame,
-      "\n処理時間 : " + results[5].duration + "ミリ秒,tick-" + this.frame
-    );
+    // performance.measure("pfm-measure-" + this.frame, "tick-p1-" + this.frame);
+    // performance.measure(
+    //   "pfm-measure-" + this.frame,
+    //   "tick-p1-" + this.frame,
+    //   "tick-p2-" + this.frame
+    // );
+    // performance.measure(
+    //   //
+    //   "pfm-measure-" + this.frame,
+    //   "tick-p2-" + this.frame,
+    //   "tick-p3-" + this.frame
+    // );
+    // performance.measure(
+    //   //
+    //   "pfm-measure-" + this.frame,
+    //   "tick-p3-" + this.frame,
+    //   "tick-p4-" + this.frame
+    // );
+    // performance.measure(
+    //   //
+    //   "pfm-measure-" + this.frame,
+    //   "tick-p4-" + this.frame,
+    //   "tick-p5-" + this.frame
+    // );
+    // performance.measure(
+    //   //
+    //   "pfm-measure-" + this.frame,
+    //   "tick-p5-" + this.frame
+    // );
+    // const results = performance.getEntriesByName("pfm-measure-" + this.frame);
+    // console.log(
+    //   "処理時間 : " + results[0].duration + "ミリ秒,tick-" + this.frame,
+    //   "\n処理時間 : " + results[1].duration + "ミリ秒,tick-" + this.frame,
+    //   "\n処理時間 : " + results[2].duration + "ミリ秒,tick-" + this.frame,
+    //   "\n処理時間 : " + results[3].duration + "ミリ秒,tick-" + this.frame,
+    //   "\n処理時間 : " + results[4].duration + "ミリ秒,tick-" + this.frame,
+    //   "\n処理時間 : " + results[5].duration + "ミリ秒,tick-" + this.frame
+    // );
     this.frame++;
     return true;
   }
-
+  /**0=>冬
+   * 1=>春
+   * 2=>夏
+   * 3=>秋
+   */
+  static getSeason() {
+    return Math.floor(this.instance.frame / 100) % 4;
+  }
+  static getSeasonSignal() {
+    return createMemo(() => Math.floor(this.signal?.()?.frame / 100) % 4);
+  }
   static born(a: Darwin, b: Darwin) {
-    if (a.sex === b.sex || this.instance.darwins.length >= this.max_pop) return;
-    const sex = N.random(0, 1);
+    if (a.gender === b.gender || this.instance.darwins.length >= this.max_pop) return;
+    const gender = [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1][N.random(0, 10)];
     const mixer = (v1: number, v2: number, difficulty = 100) => {
       // const cached = this.getMixerCache(v1, v2);
       // if (cached) return cached;
@@ -277,11 +282,13 @@ export class DarwinManager {
     };
     this.instance.darwins.push(
       new Darwin({
-        sex,
+        gen: Math.max(a.gen, b.gen) + 1,
+        gender,
         x: (a.x + b.x) / 2,
         y: (a.y + b.y) / 2,
         w: mixer(a.w, b.w),
         h: mixer(a.h, b.h),
+        sight: mixer(a.sight, b.sight),
         tall: mixer(a.tall, b.tall),
         weight: mixer(a.weight, b.weight),
         speed: mixer(a.speed, b.speed),
@@ -297,7 +304,7 @@ export class DarwinManager {
         dsdt: mixer(a.dsdt, b.dsdt),
         optimal_temperature: mixer(a.optimal_temperature, b.optimal_temperature),
         body_temperature: mixer(a.body_temperature, b.body_temperature),
-        spawnbility: sex
+        spawnbility: gender
           ? [
               a.spawnbility + 1,
               b.spawnbility + 1,
@@ -311,6 +318,12 @@ export class DarwinManager {
               1,
             ][N.random(0, 9)]
           : 0,
+        escape_direction: mixer(a.escape_direction, b.escape_direction),
+        chunk_rating_threshold: mixer(a.chunk_rating_threshold, b.chunk_rating_threshold),
+        aggressiveness: mixer(a.aggressiveness, b.aggressiveness),
+        foolhardiness: mixer(a.foolhardiness, b.foolhardiness),
+        max_stamina: mixer(a.max_stamina, b.max_stamina),
+        win_count: 0,
       })
     );
     this.instance.birth[this.instance.birth.length - 1]++;
@@ -388,7 +401,7 @@ export class DarwinManager {
     DarwinManager.pause = true;
   }
   static setPause(bool: boolean) {
-    console.log("^_^ ::: file: DarwinManager.tsx:259 ::: bool:\n", bool);
+    // console.log("^_^ ::: file: DarwinManager.tsx:259 ::: bool:\n", bool);
     DarwinManager.pause = bool;
     if (!bool) this.instance.ticker();
     // if (!bool) {

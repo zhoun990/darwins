@@ -128,7 +128,7 @@ export const DarwinsView = () => {
                       "body_temperature",
                       "spawnbility",
                       "initial_spawn_cooltime",
-                      "target_area",
+                      "target_area",'gen','win_count'
                     ] as (keyof Darwin)[]
                   ).map((k, i) => (
                     <Item color={dw.color} style={{ "min-width": 40 + "px" }}>

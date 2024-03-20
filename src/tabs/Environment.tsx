@@ -2,9 +2,27 @@ import { createEstate } from "../estate";
 import { DarwinManager } from "../main/DarwinManager";
 
 export const Environment = () => {
-  const { autoRestart, holdSeed, setEstate } = createEstate("persist");
+  const season = DarwinManager.getSeasonSignal();
+  const { autoRestart, holdSeed, max_pop, setEstate } = createEstate("persist");
+
   return (
     <div class="flex flex-col">
+      <div class="flex items-center shrink-0">Season:{season()}</div>
+      <div class="flex items-center shrink-0">
+        <input
+          type="number"
+          name="max-population"
+          id="max-population"
+          value={max_pop()}
+          onChange={(e) => {
+            setEstate({ max_pop: Number(e.target.value) });
+          }}
+          class="ml-2"
+        />
+        <label for="max-population" class="ml-2">
+          Max Population
+        </label>
+      </div>
       <div class="flex items-center shrink-0">
         <input
           type="checkbox"

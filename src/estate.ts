@@ -12,6 +12,7 @@ export const { createEstate,setEstates } = initEstate(
       holdSeed: true,
       tab: 0,
       page: 0,
+      max_pop: 1000,
       saves: [] as string[],
       savedData: {} as Record<string, DarwinManager>,
     },

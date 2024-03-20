@@ -2,7 +2,8 @@ import { DarwinManager } from "../main/DarwinManager";
 import { N } from "../main/NumericUtils";
 import { Chunk } from "../main/Chunk";
 import { createEffect, createMemo } from "solid-js";
-
+const mx = Math.max;
+const mn = Math.min;
 export const Chunks = () => {
   const size = Chunk.size;
   return (
@@ -43,6 +44,17 @@ const Item = ({ i }: { i: number }) => {
         <div> temperature: {N.round(ch().temperature)}</div>
         <div> sunlight: {N.round(ch().sunlight)}</div>
         <div> water: {N.round(ch().water)}</div>
+        <div> geothermal: {N.round(ch().geothermal)}</div>
+        <div>
+          food increase:
+          {N.round(
+            (ch().sunlight *
+              (mx(1, mn(ch().sunlight, ch().water)) / mx(1, ch().sunlight, ch().water)) *
+              ch().temperature *
+              10) /
+              mx(1, Math.floor(ch().elevation / 10))
+          )}
+        </div>
       </div>
     </div>
   );
