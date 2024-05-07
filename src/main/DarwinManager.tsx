@@ -328,10 +328,6 @@ export class DarwinManager {
     );
     this.instance.birth[this.instance.birth.length - 1]++;
   }
-  static eat(dw: Darwin) {
-    const ch = this.getChunkFromPos(dw);
-    ch?.eat(dw);
-  }
   static getChunk(x: number, y: number) {
     return this.instance.chunks.find((ch) => ch.x === x && ch.y === y);
   }
@@ -364,8 +360,11 @@ export class DarwinManager {
   static getBirthRateSignal() {
     return createMemo(() => this.signal().birth_rate);
   }
-  getDarwinFromId(id: string): Darwin | undefined {
-    return this.darwins.filter((dw) => dw.id === id)[0];
+  getDarwinFromId(id: string) {
+    return this.darwins.find((dw) => dw.id === id);
+  }
+  static getDarwinFromId(id: string) {
+    return this.instance.getDarwinFromId(id);
   }
   static getDarwinsFromArea(a: { x: number; y: number; w: number; h: number }): Darwin[] {
     const isOverlap = (
